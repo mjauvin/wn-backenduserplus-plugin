@@ -4,6 +4,7 @@ use Backend;
 use Backend\Models\User as BackendUser;
 use Event;
 use Lang;
+use Mail;
 use System\Classes\PluginBase;
 
 /**
@@ -33,6 +34,9 @@ class Plugin extends PluginBase
     protected function extendBackendUserModel()
     {
         BackendUser::extend(function ($model) {
+            unset($model->rules['password']);
+            unset($model->rules['password_confirmation']);
+
             // modify Backend User fields
             Event::listen('backend.form.extendFieldsBefore', function ($widget) {
                 if (!$widget->model instanceof \Backend\Models\User || !$widget->getController() instanceof \Backend\Controllers\Users) {
@@ -41,7 +45,7 @@ class Plugin extends PluginBase
                 $widget->tabs['fields']['send_invite']['type'] = 'radio';
                 $widget->tabs['fields']['send_invite']['options'] = [
                     'credentials' => 'studioazura.backenduserplus::lang.labels.send-invite.credentials',
-                    'restore' => 'studioazura.backenduserplus::lang.labels.send-invite.restore',
+                    'reset' => 'studioazura.backenduserplus::lang.labels.send-invite.reset',
                     null => 'studioazura.backenduserplus::lang.labels.send-invite.do-not-send',
                 ];
                 $widget->tabs['fields']['send_invite']['default'] = 'credentials';
@@ -49,7 +53,7 @@ class Plugin extends PluginBase
                 $trigger = [
                     'action' => 'hide',
                     'field' => 'send_invite',
-                    'condition' => 'value[restore]',
+                    'condition' => 'value[reset]',
                 ];
                 $widget->tabs['fields']['password']['trigger'] = $trigger;
                 $widget->tabs['fields']['password_confirmation']['trigger'] = $trigger;
@@ -59,38 +63,47 @@ class Plugin extends PluginBase
             $model->bindEvent('model.afterCreate', function () use ($model) {
                $model->restorePurgedValues();
 
-               if ($model->send_invite === 'credentials') {
-                   $model->sendInvitation();
-               } else if ($model->send_invite === 'restore') {
-                   $model->sendRestoreLink();
+               if ($model->send_invite !== null) {
+                   $model->sendCustomInvite();
                }
-               $model->send_invite = null;
-            });
+            }, 1000);
 
             // no password required when sending a reset link by email
-            $model->addDynamicMethod('beforeValidate', function () use ($model) {
-                if($model->send_invite === 'restore') {
-                    unset($model->rules['password']);
-                    unset($model->rules['password_confirmation']);
+            $model->bindEvent('model.beforeValidate', function () use ($model) {
+                if ($model->send_invite !== 'reset') {
+                    $model->rules['password'] = 'required|min:8';
+                    $model->rules['password_confirmation'] = 'required_with:password|same:password';
                 }
             });
 
-            $model->addDynamicMethod('sendRestoreLink', function () use ($model) {
-                $code = $model->getResetPasswordCode();
-                $link = Backend::url('backend/auth/reset/' . $model->id . '/' . $code);
+            $model->bindEvent('Xmodel.afterDelete', function () use ($model) {
+                $model->forceDelete();
+            });
+
+            $model->addDynamicMethod('sendCustomInvite', function () use ($model) {
+                if ($model->send_invite === 'reset') {
+                    $code = $model->getResetPasswordCode();
+                    $link = Backend::url('backend/auth/reset/' . $model->id . '/' . $code);
+                    $password = null;
+                } else {
+                    $link = Backend::url('backend');
+                    $password = $model->getOriginalHashValue('password');
+                }
 
                 $data = [
                     'name' => $model->full_name,
                     'login' => $model->login,
+                    'password' => $password,
                     'link' => $link,
                 ];
 
-                Mail::send('backend::mail.restore', $data, function ($message) {
+                Mail::send('studioazura.backenduserplus::mail.invite', $data, function ($message) use ($model) {
                     $message->to($model->email, $model->full_name);
                 });
+
+                $model->send_invite = null;
+                $model->purgeAttributes('send_invite');
             });
         });
     }
-
-
 }

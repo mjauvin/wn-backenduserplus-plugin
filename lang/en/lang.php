@@ -5,7 +5,7 @@ return [
     'labels' => [
         'send-invite' => [
             'credentials' => 'include credentials',
-            'restore' => 'include password reset link',
+            'reset' => 'include password reset link',
             'do-not-send' => 'do not send',
         ],
     ],
