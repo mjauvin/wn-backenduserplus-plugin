@@ -8,5 +8,6 @@ return [
             'reset' => 'include password reset link',
             'do-not-send' => 'do not send',
         ],
+        'purge-deleted' => 'Purge Deleted Records',
     ],
 ];

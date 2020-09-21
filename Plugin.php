@@ -1,7 +1,8 @@
 <?php namespace StudioAzura\BackendUserPlus;
 
 use Backend;
-use Backend\Models\User as BackendUser;
+use Backend\Models\User as UserModel;
+use Backend\Controllers\Users as UsersController;
 use Event;
 use Lang;
 use Mail;
@@ -22,18 +23,15 @@ class Plugin extends PluginBase
         ];
     }
 
-    public function register()
-    {
-    }
-
     public function boot()
     {
         $this->extendBackendUserModel();
+        $this->extendBackendUserController();
     }
 
     protected function extendBackendUserModel()
     {
-        BackendUser::extend(function ($model) {
+        UserModel::extend(function ($model) {
             unset($model->rules['password']);
             unset($model->rules['password_confirmation']);
 
@@ -66,7 +64,7 @@ class Plugin extends PluginBase
                if ($model->send_invite !== null) {
                    $model->sendCustomInvite();
                }
-            }, 1000);
+            }, 10);
 
             // no password required when sending a reset link by email
             $model->bindEvent('model.beforeValidate', function () use ($model) {
@@ -74,10 +72,6 @@ class Plugin extends PluginBase
                     $model->rules['password'] = 'required|min:8';
                     $model->rules['password_confirmation'] = 'required_with:password|same:password';
                 }
-            });
-
-            $model->bindEvent('Xmodel.afterDelete', function () use ($model) {
-                $model->forceDelete();
             });
 
             $model->addDynamicMethod('sendCustomInvite', function () use ($model) {
@@ -103,6 +97,20 @@ class Plugin extends PluginBase
 
                 $model->send_invite = null;
                 $model->purgeAttributes('send_invite');
+            });
+        });
+    }
+
+    protected function extendBackendUserController()
+    {
+        UsersController::extend(function ($controller) {
+            list($author, $plugin) = explode('\\', strtolower(get_class()));
+            $partials_path = sprintf('$/%s/%s/partials/users', $author, $plugin);
+            $controller->addViewPath($partials_path);
+
+            $controller->addDynamicMethod('onPurgeDeleted', function () use ($controller) {
+                UserModel::onlyTrashed()->forceDelete();
+                return $controller->listRefresh();
             });
         });
     }
