@@ -1,0 +1,28 @@
+subject = "Bienvenue à {{ appName | raw }}"
+layout = "studioazura.backenduserplus::layouts.simple"
+description = "[fr]Invite new admin to the site"
+==
+Allo {{ firstname }},
+
+Un compte usager a été créé pour vous sur **{{ appName }}**.
+
+{% partial 'panel' body %}
+- Usager: `{{ login ?: 'sample' }}`
+- Mot de passe: `{{ (password ?: '********') | raw }}`
+{% endpartial %}
+
+{% if password %}
+Vous pouvez utiliser le lien suivant pour accéder au site:
+
+{% partial 'button' url=link body %}
+    Accès administrateur
+{% endpartial %}
+
+Veuillez changer votre mot de passe une fois dans le panneau administratif en cliquant sur votre nom dans le coin supérieur droit.
+{% else %}
+Utilisez le lien suivant pour réinitialiser votre mot de passe:
+
+{% partial 'button' url=link body %}
+    Réinitialiser le mot de passe
+{% endpartial %}
+{% endif %}

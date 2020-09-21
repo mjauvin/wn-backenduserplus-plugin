@@ -1,5 +1,6 @@
 <?php namespace StudioAzura\BackendUserPlus;
 
+use App;
 use Backend;
 use Backend\Models\User as UserModel;
 use Backend\Controllers\Users as UsersController;
@@ -85,13 +86,21 @@ class Plugin extends PluginBase
                 }
 
                 $data = [
+                    'firstname' => $model->first_name,
+                    'lastname' => $model->last_name,
                     'name' => $model->full_name,
                     'login' => $model->login,
                     'password' => $password,
                     'link' => $link,
                 ];
 
-                Mail::send('studioazura.backenduserplus::mail.invite', $data, function ($message) use ($model) {
+                $template = 'studioazura.backenduserplus::mail.invite';
+
+                list($locale) = explode('-', strtolower(App::getLocale()));
+                if (in_array($locale, ['en','fr'])) {
+                    $template .= '-' . $locale;
+                }
+                Mail::send($template, $data, function ($message) use ($model) {
                     $message->to($model->email, $model->full_name);
                 });
 
