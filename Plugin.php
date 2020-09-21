@@ -1,12 +1,14 @@
 <?php namespace StudioAzura\BackendUserPlus;
 
 use App;
+use Config;
 use Backend;
 use Backend\Models\User as UserModel;
 use Backend\Controllers\Users as UsersController;
 use Event;
 use Lang;
 use Mail;
+use System\Classes\MailManager;
 use System\Classes\PluginBase;
 
 /**
@@ -22,6 +24,39 @@ class Plugin extends PluginBase
             'author'      => 'StudioAzura',
             'icon'        => 'icon-leaf'
         ];
+    }
+
+    public function register()
+    {
+        Event::listen('xmailer.beforeAddContent', function ($mailer, $message, $view, $data, $raw, $plain) {
+            return $this->localizedMailTemplate($mailer, $message, $view, $data, $raw, $plain);
+        }, 1);
+    }
+
+    public function localizedMailTemplate($mailer, $message, $view, $data, $raw, $plain)
+    {
+        if (!App::runningInBackend()) {
+            $translator = \RainLab\Translate\Classes\Translator::instance();
+            $locale = $translator->getLocale();
+            $defaultLocale = $translator->getDefaultLocale();
+        } else {
+            list($defaultLocale) = 'en';
+            list($locale) = explode('-', App::getLocale());
+        }
+
+        if ($raw !== null || $view === null || !is_string($view) || $locale === $defaultLocale) {
+            return;
+        }
+
+        $factory = Mail::getViewFactory();
+        $view = sprintf('%s-%s', $view, $locale);
+
+        if (!$factory->exists($view)) {
+            return;
+        }
+
+        $mailManager = MailManager::instance();
+        return !$mailManager->addContentToMailer($message, $view, $data, false);
     }
 
     public function boot()
@@ -94,13 +129,7 @@ class Plugin extends PluginBase
                     'link' => $link,
                 ];
 
-                $template = 'studioazura.backenduserplus::mail.invite';
-
-                list($locale) = explode('-', strtolower(App::getLocale()));
-                if (in_array($locale, ['en','fr'])) {
-                    $template .= '-' . $locale;
-                }
-                Mail::send($template, $data, function ($message) use ($model) {
+                Mail::send('studioazura.backenduserplus::mail.invite', $data, function ($message) use ($model) {
                     $message->to($model->email, $model->full_name);
                 });
 
@@ -123,4 +152,5 @@ class Plugin extends PluginBase
             });
         });
     }
+
 }
