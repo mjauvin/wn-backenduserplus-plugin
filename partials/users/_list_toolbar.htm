@@ -11,11 +11,16 @@
         <?= e(trans('backend::lang.user.group.list_title')) ?>
     </a>
 <?php if ($this->user->isSuperUser()): ?>
-    <a href="#"
+    <button
         class="btn btn-default oc-icon-refresh"
+        disabled="disabled"
         data-request="onPurgeDeleted"
         data-request-confirm="Are you sure?"
-    >
+        data-trigger-action="enable"
+        data-trigger=".control-filter input#listFilter-scope-show_deleted[type=checkbox]"
+        data-trigger-condition="checked"
+        data-request-success="$(this).prop('disabled', true)"
+        data-stripe-load-indicator>
         <?= e(trans('studioazura.backenduserplus::lang.labels.purge-deleted')) ?>
     </a>
 <?php endif ?>
