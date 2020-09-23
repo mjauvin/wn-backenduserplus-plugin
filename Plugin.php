@@ -26,39 +26,6 @@ class Plugin extends PluginBase
         ];
     }
 
-    public function register()
-    {
-        Event::listen('xmailer.beforeAddContent', function ($mailer, $message, $view, $data, $raw, $plain) {
-            return $this->localizedMailTemplate($mailer, $message, $view, $data, $raw, $plain);
-        }, 1);
-    }
-
-    public function localizedMailTemplate($mailer, $message, $view, $data, $raw, $plain)
-    {
-        if (!App::runningInBackend()) {
-            $translator = \RainLab\Translate\Classes\Translator::instance();
-            $locale = $translator->getLocale();
-            $defaultLocale = $translator->getDefaultLocale();
-        } else {
-            list($defaultLocale) = 'en';
-            list($locale) = explode('-', App::getLocale());
-        }
-
-        if ($raw !== null || $view === null || !is_string($view) || $locale === $defaultLocale) {
-            return;
-        }
-
-        $factory = Mail::getViewFactory();
-        $view = sprintf('%s-%s', $view, $locale);
-
-        if (!$factory->exists($view)) {
-            return;
-        }
-
-        $mailManager = MailManager::instance();
-        return !$mailManager->addContentToMailer($message, $view, $data, false);
-    }
-
     public function boot()
     {
         $this->extendBackendUserModel();
