@@ -22,7 +22,7 @@ class Plugin extends PluginBase
             'name'        => 'BackendUserPlus',
             'description' => 'studioazura.backenduserplus::lang.description',
             'author'      => 'StudioAzura',
-            'icon'        => 'icon-leaf'
+            'icon'        => 'icon-user-plus'
         ];
     }
 
