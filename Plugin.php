@@ -71,7 +71,7 @@ class Plugin extends PluginBase
 
             // no password required when sending a reset link by email
             $model->bindEvent('model.beforeValidate', function () use ($model) {
-                if ($model->send_invite !== 'reset') {
+                if (isset($model->send_invite) && $model->send_invite !== 'reset' || !isset($model->send_invite) && !empty($model->password)) {
                     $model->rules['password'] = 'required|min:8';
                     $model->rules['password_confirmation'] = 'required_with:password|same:password';
                 }
