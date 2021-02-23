@@ -4,6 +4,7 @@ use App;
 use Config;
 use Backend;
 use Backend\Models\User as UserModel;
+use Backend\Models\UserRole;
 use Backend\Controllers\Users as UsersController;
 use Event;
 use Lang;
@@ -30,6 +31,7 @@ class Plugin extends PluginBase
     {
         $this->extendBackendUserModel();
         $this->extendBackendUserController();
+        $this->extendBackendUserRole();
     }
 
     protected function extendBackendUserModel()
@@ -40,7 +42,7 @@ class Plugin extends PluginBase
 
             // modify Backend User fields
             Event::listen('backend.form.extendFieldsBefore', function ($widget) {
-                if (!$widget->model instanceof \Backend\Models\User || !$widget->getController() instanceof \Backend\Controllers\Users) {
+                if (!$widget->model instanceof UserModel || !$widget->getController() instanceof UsersController) {
                     return;
                 }
                 $widget->tabs['fields']['send_invite']['type'] = 'radio';
@@ -58,6 +60,21 @@ class Plugin extends PluginBase
                 ];
                 $widget->tabs['fields']['password']['trigger'] = $trigger;
                 $widget->tabs['fields']['password_confirmation']['trigger'] = $trigger;
+            });
+
+            # add position field
+            Event::listen('backend.form.extendFields', function ($widget) {
+                if (!($widget->getController() instanceof UsersController || $widget->model instanceof UserModel)) {
+                    return;
+                }
+
+                $widget->addTabFields([
+                    'position' => [
+                        'label' => 'Position Title',
+                        'tab'   => 'backend::lang.user.account',
+                        'type'  => 'text',
+                    ],
+                ]);
             });
 
             // send invite email or restore email
@@ -120,4 +137,16 @@ class Plugin extends PluginBase
         });
     }
 
+    protected function extendBackendUserRole()
+    {
+        UserRole::extend(function ($model) {
+            # allow Publisher role permissions to be changed.
+            $model->bindEvent('model.afterFetch', function () use ($model) {
+                if ($model->code == UserRole::CODE_PUBLISHER) {
+                    $model->is_system = false;
+                    $model->code .= '-mod';
+                }
+            }, 1);
+        });
+    }
 }
