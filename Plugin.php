@@ -40,6 +40,15 @@ class Plugin extends PluginBase
             unset($model->rules['password']);
             unset($model->rules['password_confirmation']);
 
+            if (!$model->propertyExists('translatable')) {
+                $model->addDynamicProperty('translatable', []);
+            }
+            $model->translatable = array_merge($model->translatable, ['position']);
+
+            if (!$model->isClassExtendedWith('RainLab\Translate\Behaviors\TranslatableModel')) {
+                $model->extendClassWith('RainLab\Translate\Behaviors\TranslatableModel');
+            }
+
             // modify Backend User fields
             Event::listen('backend.form.extendFieldsBefore', function ($widget) {
                 if (!$widget->model instanceof UserModel || !$widget->getController() instanceof UsersController) {
@@ -53,6 +62,13 @@ class Plugin extends PluginBase
                 ];
                 $widget->tabs['fields']['send_invite']['default'] = 'credentials';
 
+                # add position field
+                $widget->tabs['fields']['position'] = [
+                    'label' => 'Position Title',
+                    'tab'   => 'backend::lang.user.account',
+                    'type'  => 'text',
+                ];
+
                 $trigger = [
                     'action' => 'hide',
                     'field' => 'send_invite',
@@ -60,21 +76,6 @@ class Plugin extends PluginBase
                 ];
                 $widget->tabs['fields']['password']['trigger'] = $trigger;
                 $widget->tabs['fields']['password_confirmation']['trigger'] = $trigger;
-            });
-
-            # add position field
-            Event::listen('backend.form.extendFields', function ($widget) {
-                if (!($widget->getController() instanceof UsersController || $widget->model instanceof UserModel)) {
-                    return;
-                }
-
-                $widget->addTabFields([
-                    'position' => [
-                        'label' => 'Position Title',
-                        'tab'   => 'backend::lang.user.account',
-                        'type'  => 'text',
-                    ],
-                ]);
             });
 
             // send invite email or restore email
