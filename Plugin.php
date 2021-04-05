@@ -31,7 +31,6 @@ class Plugin extends PluginBase
     {
         $this->extendBackendUserModel();
         $this->extendBackendUserController();
-        $this->extendBackendUserRole();
     }
 
     protected function extendBackendUserModel()
