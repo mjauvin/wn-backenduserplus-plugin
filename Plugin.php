@@ -42,6 +42,7 @@ class Plugin extends PluginBase
 
             if (!$model->propertyExists('translatable')) {
                 $model->addDynamicProperty('translatable', []);
+                $model->addPurgeable('translatable');
             }
             $model->translatable = array_merge($model->translatable, ['position']);
 
@@ -135,19 +136,6 @@ class Plugin extends PluginBase
                 UserModel::onlyTrashed()->forceDelete();
                 return $controller->listRefresh();
             });
-        });
-    }
-
-    protected function extendBackendUserRole()
-    {
-        UserRole::extend(function ($model) {
-            # allow Publisher role permissions to be changed.
-            $model->bindEvent('model.afterFetch', function () use ($model) {
-                if ($model->code == UserRole::CODE_PUBLISHER) {
-                    $model->is_system = false;
-                    $model->code .= '-mod';
-                }
-            }, 1);
         });
     }
 }
