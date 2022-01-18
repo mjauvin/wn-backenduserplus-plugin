@@ -39,14 +39,16 @@ class Plugin extends PluginBase
             unset($model->rules['password']);
             unset($model->rules['password_confirmation']);
 
-            if (!$model->propertyExists('translatable')) {
-                $model->addDynamicProperty('translatable', []);
-                $model->addPurgeable('translatable');
-            }
-            $model->translatable = array_merge($model->translatable, ['position']);
+            if (\System\Classes\PluginManager::instance()->exists('RainLab.Translate')) {
+                if (!$model->propertyExists('translatable')) {
+                    $model->addDynamicProperty('translatable', []);
+                    $model->addPurgeable('translatable');
+                }
+                $model->translatable = array_merge($model->translatable, ['position']);
 
-            if (!$model->isClassExtendedWith('RainLab\Translate\Behaviors\TranslatableModel')) {
-                $model->extendClassWith('RainLab\Translate\Behaviors\TranslatableModel');
+                if (!$model->isClassExtendedWith('RainLab\Translate\Behaviors\TranslatableModel')) {
+                    $model->extendClassWith('RainLab\Translate\Behaviors\TranslatableModel');
+                }
             }
 
             // modify Backend User fields
