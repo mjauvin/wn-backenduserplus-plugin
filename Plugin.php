@@ -82,11 +82,13 @@ class Plugin extends PluginBase
 
             // send invite email or restore email
             $model->bindEvent('model.afterCreate', function () use ($model) {
-               $model->restorePurgedValues();
+                $model->restorePurgedValues();
 
-               if ($model->send_invite !== null) {
-                   $model->sendCustomInvite();
-               }
+                if (!empty($model->send_invite)) {
+                    $model->sendCustomInvite();
+                }
+                $model->send_invite = null;
+                $model->purgeAttributes('send_invite');
             }, 10);
 
             // no password required when sending a reset link by email
@@ -119,9 +121,6 @@ class Plugin extends PluginBase
                 Mail::send('studioazura.backenduserplus::mail.invite', $data, function ($message) use ($model) {
                     $message->to($model->email, $model->full_name);
                 });
-
-                $model->send_invite = null;
-                $model->purgeAttributes('send_invite');
             });
         });
     }
