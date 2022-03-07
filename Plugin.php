@@ -11,6 +11,7 @@ use Lang;
 use Mail;
 use System\Classes\MailManager;
 use System\Classes\PluginBase;
+use System\Classes\PluginManager;
 
 /**
  * BackendUserPlus Plugin Information File
@@ -39,7 +40,7 @@ class Plugin extends PluginBase
             unset($model->rules['password']);
             unset($model->rules['password_confirmation']);
 
-            if (\System\Classes\PluginManager::instance()->exists('RainLab.Translate')) {
+            if (PluginManager::instance()->exists('RainLab.Translate')) {
                 if (!$model->propertyExists('translatable')) {
                     $model->addDynamicProperty('translatable', []);
                     $model->addPurgeable('translatable');
