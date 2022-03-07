@@ -61,7 +61,7 @@ class Plugin extends PluginBase
                 $widget->tabs['fields']['send_invite']['options'] = [
                     'credentials' => 'studioazura.backenduserplus::lang.labels.send-invite.credentials',
                     'reset' => 'studioazura.backenduserplus::lang.labels.send-invite.reset',
-                    null => 'studioazura.backenduserplus::lang.labels.send-invite.do-not-send',
+                    'none' => 'studioazura.backenduserplus::lang.labels.send-invite.do-not-send',
                 ];
                 $widget->tabs['fields']['send_invite']['default'] = 'credentials';
 
@@ -75,7 +75,7 @@ class Plugin extends PluginBase
                 $trigger = [
                     'action' => 'hide',
                     'field' => 'send_invite',
-                    'condition' => 'value[reset]',
+                    'condition' => 'value[reset][none]',
                 ];
                 $widget->tabs['fields']['password']['trigger'] = $trigger;
                 $widget->tabs['fields']['password_confirmation']['trigger'] = $trigger;
@@ -85,7 +85,7 @@ class Plugin extends PluginBase
             $model->bindEvent('model.afterCreate', function () use ($model) {
                 $model->restorePurgedValues();
 
-                if (!empty($model->send_invite)) {
+                if (isset($model->send_invite) && $model->send_invite != 'none') {
                     $model->sendCustomInvite();
                 }
                 $model->send_invite = null;
@@ -94,6 +94,10 @@ class Plugin extends PluginBase
 
             // no password required when sending a reset link by email
             $model->bindEvent('model.beforeValidate', function () use ($model) {
+                if (isset($model->send_invite) && $model->send_invite === 'none') {
+                    $passwd = md5(time());
+                    $model->password = $model->password_confirmation = $passwd;
+                }
                 if (isset($model->send_invite) && $model->send_invite !== 'reset' || !isset($model->send_invite) && !empty($model->password)) {
                     $model->rules['password'] = 'required|min:8';
                     $model->rules['password_confirmation'] = 'required_with:password|same:password';
