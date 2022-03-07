@@ -40,15 +40,15 @@ class Plugin extends PluginBase
             unset($model->rules['password']);
             unset($model->rules['password_confirmation']);
 
-            if (PluginManager::instance()->exists('RainLab.Translate')) {
+            if (PluginManager::instance()->exists('Winter.Translate')) {
                 if (!$model->propertyExists('translatable')) {
                     $model->addDynamicProperty('translatable', []);
                     $model->addPurgeable('translatable');
                 }
                 $model->translatable = array_merge($model->translatable, ['position']);
 
-                if (!$model->isClassExtendedWith('RainLab\Translate\Behaviors\TranslatableModel')) {
-                    $model->extendClassWith('RainLab\Translate\Behaviors\TranslatableModel');
+                if (!$model->isClassExtendedWith('Winter\Translate\Behaviors\TranslatableModel')) {
+                    $model->extendClassWith('Winter\Translate\Behaviors\TranslatableModel');
                 }
             }
 
