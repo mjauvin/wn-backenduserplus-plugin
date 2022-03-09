@@ -10,5 +10,6 @@ return [
         ],
         'purge-deleted' => 'Purge Deleted Records',
         'confirm-purge-deleted' => 'Purging deleted records: are you sure?',
+        'title' => 'Position title',
     ],
 ];

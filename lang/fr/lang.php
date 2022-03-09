@@ -10,5 +10,6 @@ return [
         ],
         'purge-deleted' => 'Purger les usagers supprimés',
         'confirm-purge-deleted' => 'Purge des usagers supprimés: êtes-vous certain?',
+        'title' => 'Titre du poste',
     ],
 ];

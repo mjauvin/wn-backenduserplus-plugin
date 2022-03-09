@@ -67,7 +67,7 @@ class Plugin extends PluginBase
 
                 # add position field
                 $widget->tabs['fields']['position'] = [
-                    'label' => 'Position Title',
+                    'label' => 'studioazura.backenduserplus::lang.labels.title',
                     'tab'   => 'backend::lang.user.account',
                     'type'  => 'text',
                 ];
