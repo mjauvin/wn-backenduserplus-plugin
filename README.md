@@ -4,7 +4,7 @@
 
 The following options are now available:
 
-- incude credentials
+- include credentials
 - include password reset link
 - do not send (this will also generate a random password)
 
