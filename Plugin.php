@@ -45,7 +45,7 @@ class Plugin extends PluginBase
                     $model->addDynamicProperty('translatable', []);
                     $model->addPurgeable('translatable');
                 }
-                $model->translatable = array_merge($model->translatable, ['position']);
+                $model->translatable = array_merge($model->translatable, ['position', 'description']);
 
                 if (!$model->isClassExtendedWith('Winter\Translate\Behaviors\TranslatableModel')) {
                     $model->extendClassWith('Winter\Translate\Behaviors\TranslatableModel');
@@ -65,11 +65,21 @@ class Plugin extends PluginBase
                 ];
                 $widget->tabs['fields']['send_invite']['default'] = 'credentials';
 
+                $widget->tabs['icons']['studioazura.backenduserplus::lang.tabs.meta'] = 'icon-id-card';
+
                 # add position field
                 $widget->tabs['fields']['position'] = [
                     'label' => 'studioazura.backenduserplus::lang.labels.title',
-                    'tab'   => 'backend::lang.user.account',
+                    'tab'   => 'studioazura.backenduserplus::lang.tabs.meta',
                     'type'  => 'text',
+                    'span' => 'left',
+                ];
+
+                # add description field
+                $widget->tabs['fields']['description'] = [
+                    'label' => 'studioazura.backenduserplus::lang.labels.description',
+                    'tab'   => 'studioazura.backenduserplus::lang.tabs.meta',
+                    'type'  => 'textarea',
                 ];
 
                 $trigger = [

@@ -3,3 +3,6 @@
     - Make Publisher Role permissions editable
     - Add position to Backend User table.
     - add_position_to_user_table.php
+1.0.3:
+    - Add description to Backend User table.
+    - add_description_to_user_table.php
