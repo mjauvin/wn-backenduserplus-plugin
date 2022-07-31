@@ -1,6 +1,5 @@
 1.0.1: First version of BackendUserPlus
 1.0.2:
-    - Make Publisher Role permissions editable
     - Add position to Backend User table.
     - add_position_to_user_table.php
 1.0.3:
