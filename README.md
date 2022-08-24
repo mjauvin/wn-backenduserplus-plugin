@@ -10,7 +10,11 @@ The following options are now available:
 
 ## Position Title
 
-A job title field as also been added (useful for Blog Post author)
+A job title field has been added (useful for Blog Post author bio)
+
+## Position Description
+
+A job description field has been added (useful for Blog Post author bio)
 
 ## Purge deleted records
 
