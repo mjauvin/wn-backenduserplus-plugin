@@ -5,11 +5,10 @@ use October\Rain\Database\Updates\Migration;
 
 class AddDescriptionToUserTable extends Migration
 {
-
     public function up()
     {
         Schema::table('backend_users', function ($table) {
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
         });
     }
 
@@ -19,5 +18,4 @@ class AddDescriptionToUserTable extends Migration
             $table->dropColumn('description');
         });
     }
-
 }
