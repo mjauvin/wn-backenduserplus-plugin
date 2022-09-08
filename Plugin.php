@@ -41,11 +41,8 @@ class Plugin extends PluginBase
             unset($model->rules['password_confirmation']);
 
             if (PluginManager::instance()->exists('Winter.Translate')) {
-                if (!$model->propertyExists('translatable')) {
-                    $model->addDynamicProperty('translatable', []);
-                    $model->addPurgeable('translatable');
-                }
-                $model->translatable = array_merge($model->translatable, ['position', 'description']);
+                $model->addPurgeable('translatable');
+                $model->addDynamicProperty('translatable', ['position', 'description']);
 
                 if (!$model->isClassExtendedWith('Winter\Translate\Behaviors\TranslatableModel')) {
                     $model->extendClassWith('Winter\Translate\Behaviors\TranslatableModel');
