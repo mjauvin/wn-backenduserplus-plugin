@@ -15,5 +15,6 @@ return [
         'confirm-purge-deleted' => 'Purging deleted records: are you sure?',
         'title' => 'Position title',
         'description' => 'Description',
+        'changePassword' => 'Change Password',
     ],
 ];

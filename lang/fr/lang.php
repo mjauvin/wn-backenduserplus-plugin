@@ -12,5 +12,6 @@ return [
         'confirm-purge-deleted' => 'Purge des usagers supprimés: êtes-vous certain?',
         'title' => 'Titre du poste',
         'description' => 'Description',
+        'changePassword' => 'Changer le mot de passe',
     ],
 ];

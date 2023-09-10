@@ -49,6 +49,22 @@ class Plugin extends PluginBase
                 }
             }
 
+            $model->bindEvent('model.form.filterFields', function ($formWidget, $fields, $context) {
+                if ($context === 'update') {
+                    $fields->password->hidden = $fields->password_confirmation->hidden = true;
+                    if (isset($fields->_changePassword) && $fields->_changePassword->value) {
+                        $fields->password->hidden = false;
+                        $fields->password_confirmation->hidden = false;
+                    }
+                }
+                else if ($context === 'create') {
+                    if (isset($fields->send_invite) && in_array($fields->send_invite->value, ['none','reset'])) {
+                        $fields->password->hidden = true;
+                        $fields->password_confirmation->hidden = true;
+                    }
+                }
+            });
+
             // modify Backend User fields
             Event::listen('backend.form.extendFieldsBefore', function ($widget) {
                 if (!$widget->model instanceof UserModel || !$widget->getController() instanceof UsersController) {
@@ -63,6 +79,14 @@ class Plugin extends PluginBase
                 $widget->tabs['fields']['send_invite']['default'] = 'credentials';
 
                 $widget->tabs['icons']['studioazura.backenduserplus::lang.tabs.meta'] = 'icon-id-card';
+
+                # add change password checkbox
+                $widget->tabs['fields']['_changePassword'] = [
+                    'label' => 'studioazura.backenduserplus::lang.labels.changePassword',
+                    'tab'   => 'backend::lang.user.account',
+                    'type'  => 'checkbox',
+                    'context' => 'update',
+                ];
 
                 # add position field
                 $widget->tabs['fields']['position'] = [
@@ -79,13 +103,8 @@ class Plugin extends PluginBase
                     'type'  => 'textarea',
                 ];
 
-                $trigger = [
-                    'action' => 'hide',
-                    'field' => 'send_invite',
-                    'condition' => 'value[reset][none]',
-                ];
-                $widget->tabs['fields']['password']['trigger'] = $trigger;
-                $widget->tabs['fields']['password_confirmation']['trigger'] = $trigger;
+                $widget->tabs['fields']['password']['dependsOn'] = ['_changePassword', 'send_invite'];
+                $widget->tabs['fields']['password_confirmation']['dependsOn'] = ['_changePassword', 'send_invite'];
             });
 
             // send invite email or restore email
@@ -105,7 +124,7 @@ class Plugin extends PluginBase
                     $passwd = md5(time());
                     $model->password = $model->password_confirmation = $passwd;
                 }
-                if (isset($model->send_invite) && $model->send_invite !== 'reset' || !isset($model->send_invite) && !empty($model->password)) {
+                if ((isset($model->send_invite) && $model->send_invite !== 'reset') || (!isset($model->send_invite) && !$model->originalIsEquivalent('password'))) {
                     $model->rules['password'] = 'required|min:8';
                     $model->rules['password_confirmation'] = 'required_with:password|same:password';
                 }
