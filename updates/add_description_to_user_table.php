@@ -7,9 +7,11 @@ class AddDescriptionToUserTable extends Migration
 {
     public function up()
     {
-        Schema::table('backend_users', function ($table) {
-            $table->text('description')->nullable();
-        });
+        if (!Schema::hasColumn('backend_users', 'description')) {
+            Schema::table('backend_users', function ($table) {
+                $table->text('description')->nullable();
+            });
+        }
     }
 
     public function down()

@@ -8,9 +8,11 @@ class AddPositionToUserTable extends Migration
 
     public function up()
     {
-        Schema::table('backend_users', function ($table) {
-            $table->string('position')->nullable();
-        });
+        if (!Schema::hasColumn('backend_users', 'position')) {
+            Schema::table('backend_users', function ($table) {
+                $table->string('position')->nullable();
+            });
+        }
     }
 
     public function down()
