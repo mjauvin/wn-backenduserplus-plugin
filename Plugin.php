@@ -1,14 +1,21 @@
 <?php namespace StudioAzura\BackendUserPlus;
 
 use App;
-use Config;
 use Backend;
+use BackendAuth;
 use Backend\Models\User as UserModel;
 use Backend\Models\UserRole;
 use Backend\Controllers\Users as UsersController;
+use Cache;
+use Carbon\Carbon;
+use Config;
 use Event;
+use Flash;
 use Lang;
 use Mail;
+use Redirect;
+use Request;
+use Session;
 use System\Classes\MailManager;
 use System\Classes\PluginBase;
 use System\Classes\PluginManager;
@@ -32,6 +39,7 @@ class Plugin extends PluginBase
     {
         $this->extendBackendUserModel();
         $this->extendBackendUserController();
+        $this->addRecordLock();
     }
 
     protected function extendBackendUserModel()
@@ -167,6 +175,45 @@ class Plugin extends PluginBase
                 UserModel::onlyTrashed()->forceDelete();
                 return $controller->listRefresh();
             });
+        });
+    }
+
+    protected function addRecordLock()
+    {
+        Event::listen('backend.page.beforeDisplay', function ($controller, $action, $params) {
+            if ($action === 'update') {
+                $recordId = $params[0];
+                if (! $model = $controller->formFindModelObject($recordId)) {
+                    return;
+                }
+                $controller->initForm($model);
+
+                $cacheKey = sprintf("%s-%d", str_replace('\\', '-', get_class($model)), $recordId);
+
+                $cacheValue = [
+                    'ip' => Request::ip(),
+                    'token' => Session::get('_token'),
+                    'user' => BackendAuth::getUser()?->login,
+                    'ts' => Carbon::now()->timestamp,
+                ];
+
+                if (!$lock = Cache::get($cacheKey)) {
+                    Cache::put($cacheKey, $cacheValue, 3600);
+                    if ($lastLock = Session::get('lastLock')) {
+                        Cache::forget($lastLock);
+                    }
+                    Session::put('lastLock', $cacheKey);
+                }
+                elseif ($lock['token'] !== $cacheValue['token']) {
+                    $ts = (new Carbon(array_get($lock, 'ts')))->toDateTimeString();
+                    $user = strtoupper(array_get($lock, 'user'));
+                    Flash::error("Access rights granted to {$user} since {$ts}");
+                    return Redirect::back();
+                }
+            }
+            else if ($cacheKey = Session::pull('lastLock')) {
+                Cache::forget($cacheKey);
+            }
         });
     }
 }

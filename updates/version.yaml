@@ -5,3 +5,5 @@
 1.0.3:
     - Add description to Backend User table.
     - add_description_to_user_table.php
+1.0.4:
+    - Add backend record update auto-locking feature
