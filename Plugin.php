@@ -207,8 +207,8 @@ class Plugin extends PluginBase
                 elseif ($lock['token'] !== $cacheValue['token']) {
                     $ts = (new Carbon(array_get($lock, 'ts')))->toDateTimeString();
                     $user = strtoupper(array_get($lock, 'user'));
-                    Flash::error("Access rights granted to {$user} since {$ts}");
-                    return Redirect::back();
+                    Flash::error("Opening in PREVIEW mode, user {$user} is updating the record.");
+                    return Redirect::to($controller->actionUrl('preview',$recordId));
                 }
             }
             else if ($cacheKey = Session::pull('lastLock')) {
