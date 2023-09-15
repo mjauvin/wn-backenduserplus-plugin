@@ -198,7 +198,7 @@ class Plugin extends PluginBase
                 ];
 
                 if (!$lock = Cache::get($cacheKey)) {
-                    Cache::put($cacheKey, $cacheValue, 3600);
+                    Cache::put($cacheKey, $cacheValue, 5*60);
                     if ($lastLock = Session::get('lastLock')) {
                         Cache::forget($lastLock);
                     }
@@ -207,8 +207,8 @@ class Plugin extends PluginBase
                 elseif ($lock['token'] !== $cacheValue['token']) {
                     $ts = (new Carbon(array_get($lock, 'ts')))->toDateTimeString();
                     $user = strtoupper(array_get($lock, 'user'));
-                    Flash::error("Opening in PREVIEW mode, user {$user} is updating the record.");
-                    return Redirect::to($controller->actionUrl('preview',$recordId));
+                    Flash::error("Access DENIED, user {$user} is updating the record.");
+                    return Redirect::back();
                 }
             }
             else if ($cacheKey = Session::pull('lastLock')) {
