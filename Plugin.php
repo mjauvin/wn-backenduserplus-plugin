@@ -181,6 +181,9 @@ class Plugin extends PluginBase
     protected function addRecordLock()
     {
         Event::listen('backend.page.beforeDisplay', function ($controller, $action, $params) {
+            if (!method_exists($controller, 'formFindModelObject')) {
+                return;
+            }
             if ($action === 'update') {
                 $recordId = $params[0];
                 if (! $model = $controller->formFindModelObject($recordId)) {
