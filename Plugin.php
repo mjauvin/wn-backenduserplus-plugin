@@ -133,8 +133,10 @@ class Plugin extends PluginBase
                     $model->password = $model->password_confirmation = $passwd;
                 }
                 if ((isset($model->send_invite) && $model->send_invite !== 'reset') || (!isset($model->send_invite) && !$model->originalIsEquivalent('password'))) {
-                    $model->rules['password'] = 'required|min:8';
-                    $model->rules['password_confirmation'] = 'required_with:password|same:password';
+                    if ($model->password || $model->password_confirmation) {
+                        $model->rules['password'] = 'required|min:8';
+                        $model->rules['password_confirmation'] = 'required_with:password|same:password';
+                    }
                 }
             });
 
