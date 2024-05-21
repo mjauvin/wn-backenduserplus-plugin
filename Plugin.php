@@ -58,7 +58,7 @@ class Plugin extends PluginBase
             }
 
             $model->bindEvent('model.form.filterFields', function ($formWidget, $fields, $context) {
-                if ($context === 'update') {
+                if (in_array($context, ['myaccount','update'])) {
                     $fields->password->hidden = $fields->password_confirmation->hidden = true;
                     if (isset($fields->_changePassword) && $fields->_changePassword->value) {
                         $fields->password->hidden = false;
@@ -93,7 +93,7 @@ class Plugin extends PluginBase
                     'label' => 'studioazura.backenduserplus::lang.labels.changePassword',
                     'tab'   => 'backend::lang.user.account',
                     'type'  => 'checkbox',
-                    'context' => 'update',
+                    'context' => ['myaccount','update'],
                 ];
 
                 # add position field
@@ -133,10 +133,8 @@ class Plugin extends PluginBase
                     $model->password = $model->password_confirmation = $passwd;
                 }
                 if ((isset($model->send_invite) && $model->send_invite !== 'reset') || (!isset($model->send_invite) && !$model->originalIsEquivalent('password'))) {
-                    if ($model->password || $model->password_confirmation) {
-                        $model->rules['password'] = 'required|min:8';
-                        $model->rules['password_confirmation'] = 'required_with:password|same:password';
-                    }
+                    $model->rules['password'] = 'required|min:8';
+                    $model->rules['password_confirmation'] = 'required_with:password|same:password';
                 }
             });
 
