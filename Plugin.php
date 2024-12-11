@@ -115,16 +115,17 @@ class Plugin extends PluginBase
                 $widget->tabs['fields']['password_confirmation']['dependsOn'] = ['_changePassword', 'send_invite'];
             });
 
-            // send invite email or restore email
-            $model->bindEvent('model.afterCreate', function () use ($model) {
+            // send invite or restore email
+            $model->bindEventOnce('model.afterCreate', function () use ($model) {
                 $model->restorePurgedValues();
 
-                if (isset($model->send_invite) && $model->send_invite != 'none') {
+                if (isset($model->send_invite) && $model->send_invite !== 'none') {
                     $model->sendCustomInvite();
                 }
                 $model->send_invite = null;
                 $model->purgeAttributes('send_invite');
-            }, 10);
+                return false;
+            });
 
             // no password required when sending a reset link by email
             $model->bindEvent('model.beforeValidate', function () use ($model) {
