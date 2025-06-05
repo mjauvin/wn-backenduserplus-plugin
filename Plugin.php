@@ -182,7 +182,7 @@ class Plugin extends PluginBase
     protected function addRecordLock()
     {
         Event::listen('backend.page.beforeDisplay', function ($controller, $action, $params) {
-            if (!method_exists($controller, 'formFindModelObject')) {
+            if (!$controller->isClassExtendedWith(\Backend\Behaviors\FormController::class)) {
                 return;
             }
             if ($action === 'update') {
