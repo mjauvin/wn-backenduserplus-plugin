@@ -187,7 +187,7 @@ class Plugin extends PluginBase
             }
             if ($action === 'update') {
                 $recordId = $params[0];
-                if (! $model = $controller->formFindModelObject($recordId)) {
+                if (!is_int($recordId) || !$model = $controller->formFindModelObject($recordId)) {
                     return;
                 }
                 $controller->initForm($model);
