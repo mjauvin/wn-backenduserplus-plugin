@@ -6,6 +6,7 @@ use BackendAuth;
 use Backend\Models\User as UserModel;
 use Backend\Models\UserRole;
 use Backend\Controllers\Users as UsersController;
+use Backend\Controllers\MyAccount as MyAccountController;
 use Cache;
 use Carbon\Carbon;
 use Config;
@@ -75,7 +76,10 @@ class Plugin extends PluginBase
 
             // modify Backend User fields
             Event::listen('backend.form.extendFieldsBefore', function ($widget) {
-                if (!$widget->model instanceof UserModel || !$widget->getController() instanceof UsersController) {
+                if (!$widget->model instanceof UserModel) {
+                    return;
+                }
+                if (!$widget->getController() instanceof UsersController && !$widget->getController() instanceof MyAccountController) {
                     return;
                 }
                 $widget->tabs['fields']['send_invite']['type'] = 'radio';
