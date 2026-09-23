@@ -26,6 +26,8 @@ use System\Classes\PluginManager;
  */
 class Plugin extends PluginBase
 {
+    public $elevated = true;
+
     public function pluginDetails()
     {
         return [
@@ -171,16 +173,14 @@ class Plugin extends PluginBase
 
     protected function extendBackendUserController()
     {
-        UsersController::extend(function ($controller) {
-            list($author, $plugin) = explode('\\', strtolower(get_class()));
-            $partials_path = sprintf('$/%s/%s/partials/users', $author, $plugin);
-            $controller->addViewPath($partials_path);
+        UsersController::extend(function () {
+            $this->addViewPath( '$/studioazura/backenduserplus/partials/users' );
 
-            $controller->addDynamicMethod('onPurgeDeleted', function () use ($controller) {
+            $this->addDynamicMethod('onPurgeDeleted', function () {
                 UserModel::onlyTrashed()->forceDelete();
-                return $controller->listRefresh();
+                return $this->listRefresh();
             });
-        });
+        }, true);
     }
 
     protected function addRecordLock()
